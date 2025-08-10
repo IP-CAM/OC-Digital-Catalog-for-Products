@@ -1,0 +1,117 @@
+{{ header }}{{ column_left }}
+<div id="content">
+	<div class="page-header">
+		<div class="container-fluid">
+			<div class="pull-right">
+				{{ save_section.buttons }}
+			</div>
+			<h1>{{ heading_title }}</h1>
+			<ul class="breadcrumb">
+				{% for breadcrumb in breadcrumbs %}
+					<li>
+						<a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+					</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	<div class="container-fluid">
+		{% if error_warning %}
+			<div class="alert alert-danger alert-dismissible">
+				<i class="fa fa-exclamation-circle"></i>
+				{{ error_warning }}
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+			</div>
+		{% endif %}
+		{% if success %}
+			<div class="alert alert-success">
+				<i class="fa fa-exclamation-circle"></i>
+				{{ success }}
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+			</div>
+		{% endif %}
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					<i class="fa fa-pencil"></i>
+					{{ text_edit }}</h3>
+			</div>
+			<div class="panel-body">
+				<form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-module" class="form-horizontal">
+					{{ save_section.input }}
+					{{ main_sub_module_form }}
+
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-image-limit">تعداد تصاویر </label>
+						<div class="col-sm-10">
+							<input type="number" name="digital_catalog_image_limit" value="{{ digital_catalog_image_limit }}" min="1" id="input-image-limit" class="form-control"/>
+						</div>
+					</div>
+
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-id">{{ entry_show_id }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_id" id="input-show-id" value="1" {% if digital_catalog_show_id %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-name">{{ entry_show_name }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_name" id="input-show-name" value="1" {% if digital_catalog_show_name %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-image">{{ entry_show_image }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_image" id="input-show-image" value="1" {% if digital_catalog_show_image %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-price">{{ entry_show_price }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_price" id="input-show-price" value="1" {% if digital_catalog_show_price %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-model">{{ entry_show_model }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_model" id="input-show-model" value="1" {% if digital_catalog_show_model %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-attributes">{{ entry_show_attributes }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_attributes" id="input-show-attributes" value="1" {% if digital_catalog_show_attributes %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-color">{{ entry_show_color }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_color" id="input-show-color" value="1" {% if digital_catalog_show_color %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="input-show-description">{{ entry_show_description }}</label>
+						<div class="col-sm-10">
+							<input type="checkbox" name="digital_catalog_show_description" id="input-show-description" value="1" {% if digital_catalog_show_description %} checked="checked" {% endif %}/>
+						</div>
+					</div>
+
+				</form>
+
+			</div>
+		</div>
+	</div>
+
+</div>
+
+{{ footer }}

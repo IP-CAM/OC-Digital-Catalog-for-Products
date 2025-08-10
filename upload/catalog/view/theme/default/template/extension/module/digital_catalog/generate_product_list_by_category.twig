@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Bazar Rag machine-made carpet online store</title>
+		<meta name="viewport" content="width=21cm, initial-scale=1">
+		<link rel="stylesheet" href="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/css/digital_catalog.css"/>
+	</head>
+	<body dir="rtl">
+		<header>
+			<div class="store_logo">
+				<img src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/image/logo-bazar-rug-01.jpg"/>
+			</div>
+			<div class="store_name">
+				فروشگاه اینترنتی فرش ماشینی بازار راگ
+			</div>
+		</header>
+
+		<h1 style="color:red;">{{ category_name }}</h1>
+		<table width="100%">
+			<thead>
+				<tr>
+					{% if show_id %}
+						<th>شناسه</th>
+					{% endif %}
+					{% if show_name %}
+						<th>نام</th>
+					{% endif %}
+					{% if show_image %}
+						<th>تصویر</th>
+					{% endif %}
+					{% if show_price %}
+						<th>قیمت</th>
+					{% endif %}
+					{% if show_model %}
+						<th>مدل</th>
+					{% endif %}
+					{% if show_attributes %}
+						<th>خصوصیات</th>
+					{% endif %}
+					{% if show_color %}
+						<th>رنگ</th>
+					{% endif %}
+					{% if show_description %}
+						<th>توضیحات</th>
+					{% endif %}
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					{% if show_id %}
+						<td>{{ product.product_id }}</td>
+					{% endif %}
+					{% if show_name %}
+						<td>{{ product.name }}</td>
+					{% endif %}
+					{% if show_image %}
+						<td>
+							{% if images %}
+								{% for image in images %}
+									<img src="{{ image.image }}" width="50"/>
+								{% endfor %}
+							{% else %}
+								<img src="{{ product.image }}" width="50"/>
+							{% endif %}
+						</td>
+					{% endif %}
+
+					{% if show_price %}
+						<td>{{ product.price }}</td>
+					{% endif %}
+					{% if show_model %}
+						<td>{{ product.model }}</td>
+					{% endif %}
+					{% if show_attributes %}
+						<td>
+							{% if attributes %}
+								<ul>
+									{% for attribute in attributes %}
+										<li>
+											<strong>{{ attribute.name }}:</strong>
+											{{ attribute.text }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						</td>
+					{% endif %}
+					{% if show_color %}
+						<td>{{ product.color }}</td>
+					{% endif %}
+					{% if show_description %}
+						<td>{{ description|raw }}</td>
+					{% endif %}
+				</tr>
+			</tbody>
+		</table>
+	</body>
+</html>

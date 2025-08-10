@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+<name>digital_catalog</name>
+<code>digital_catalog</code>
+<version>2.0.0.0</version>
+<author>AshkanMahdizadeh</author>
+<link>https://github.com/TheRealAshkan</link>
+<file path="catalog/controller/product/category.php">
+<operation>
+<search><![CDATA[$category_info = $this->model_catalog_category->getCategory($category_id);]]></search>
+<add position="before"><![CDATA[
+$digital_catalog = $this->config->get('digital_catalog');
+if(isset($digital_catalog['status']) && $digital_catalog['status'] == 1) {
+$data['pdf_generate_product_list_by_category'] = $this->url->link('extension/module/digital_catalog/generate_product_list_by_category','category_id=' .$category_id);
+}
+]]></add>
+</operation>
+</file>
+</modification>
