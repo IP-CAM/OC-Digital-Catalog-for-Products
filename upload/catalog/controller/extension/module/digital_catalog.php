@@ -1,10 +1,4 @@
 <?php
-// require_once DIR_SYSTEM . 'library/mpdf/vendor/autoload.php';
-
-require_once(modification(DIR_SYSTEM . 'library/tcpdf/tcpdf.php'));
-require_once(modification(DIR_SYSTEM . 'library/tcpdf/include/tcpdf_fonts.php'));
-
-
 class ControllerExtensionModuleDigitalCatalog extends Controller
 {
 
@@ -27,23 +21,6 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $category_info = $this->model_catalog_category->getCategory($category_id);
         $products = $this->getProductsFromCategory($category_id);
 
-        // بارگذاری TCPDF
-        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true);
-        $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('Bazarrug');
-        $pdf->SetTitle($category_info['name']);
-        $pdf->SetSubject($category_info['name']);
-        $pdf->setRTL(true);
-
-        $font_path = DIR_APPLICATION . 'view/theme/default/stylesheet/digital_catalog/fonts/Vazirmatn-Bold.ttf';
-        if (file_exists($font_path)) {
-            $fontname = TCPDF_FONTS::addTTFfont($font_path, 'TrueTypeUnicode', '', 96);
-            $pdf->SetFont($fontname, '', 12);
-        }
-
-        $pdf->SetAutoPageBreak(TRUE, 15);
-        $pdf->SetMargins(15, 15, 15);
-
         $base_data = [
             'category_name' => $category_info['name'],
             'base' => HTTP_SERVER,
@@ -58,11 +35,14 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             'show_color' => !empty($settings['digital_catalog_show_color']),
             'show_description' => !empty($settings['digital_catalog_show_description'])
         ];
-
+        $products_data = [];
         foreach ($products as $product) {
 
-
-            $pdf->AddPage();
+            if ($product['image']) {
+                $product['main_image'] = HTTP_SERVER . 'image/' . $product['image'];
+            } else {
+                $product['main_image'] = '';
+            }
 
             $image_limit = isset($settings['digital_catalog_image_limit']) ? (int)$settings['digital_catalog_image_limit'] : 3;
 
@@ -90,6 +70,7 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 $img['image'] = HTTP_SERVER . 'image/' . $img['image'];
             }
 
+
             // دریافت خصوصیات فعال محصول 
             $attributes = [];
             if ($base_data['show_attributes']) {
@@ -115,13 +96,15 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             // دریافت رنگ محصول
             if ($base_data['show_color']) {
                 $rows = $this->db->query("
-                SELECT color FROM " . DB_PREFIX . "product_image
-                WHERE product_id = " . (int)$product['product_id'] . "
-                AND color IS NOT NULL AND color != '' AND color != '0'
-                ORDER BY sort_order ASC
-            ")->rows;
+        SELECT color FROM " . DB_PREFIX . "product_image
+        WHERE product_id = " . (int)$product['product_id'] . "
+        AND color IS NOT NULL AND color != '' AND color != '0'
+        ORDER BY sort_order ASC
+    ")->rows;
 
                 $product['color'] = '-';
+                $product['color_data'] = []; // آرایه برای نگهداری نام و کد رنگ
+
                 if ($rows) {
                     $ids = [];
                     foreach ($rows as $r) {
@@ -132,30 +115,60 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                     }
 
                     $names = [];
+                    $color_codes_map = [];
+
                     if ($num_ids = array_filter($ids, 'is_numeric')) {
                         $map = [];
                         $lang = (int)$this->config->get('config_language_id');
                         $in = implode(',', array_map('intval', $num_ids));
+
+                        // گرفتن نام رنگ‌ها
                         foreach (
                             $this->db->query("
-                        SELECT option_value_id, name
-                        FROM " . DB_PREFIX . "option_value_description
-                        WHERE option_value_id IN ($in) AND language_id = $lang
-                    ")->rows as $row
+                    SELECT option_value_id, name
+                    FROM " . DB_PREFIX . "option_value_description
+                    WHERE option_value_id IN ($in) AND language_id = $lang
+                ")->rows as $row
                         ) {
                             $map[$row['option_value_id']] = $row['name'];
                         }
+
+                        // گرفتن کد رنگ‌ها
+                        foreach (
+                            $this->db->query("
+                    SELECT option_value_id, color_code
+                    FROM " . DB_PREFIX . "option_value_color_code
+                    WHERE option_value_id IN ($in)
+                ")->rows as $row
+                        ) {
+                            $color_codes_map[$row['option_value_id']] = $row['color_code'];
+                        }
+
                         foreach ($ids as $id) {
-                            $names[] = is_numeric($id) ? ($map[$id] ?? "رنگ (کد: $id)") : $id;
+                            $name = is_numeric($id) ? ($map[$id] ?? "رنگ (کد: $id)") : $id;
+                            $code = $color_codes_map[$id] ?? '#cccccc'; // کد رنگ پیش‌فرض اگر موجود نبود
+
+                            $names[] = $name;
+                            $product['color_data'][] = [
+                                'name' => $name,
+                                'code' => $code
+                            ];
                         }
                     } else {
                         $names = $ids;
+                        foreach ($ids as $id) {
+                            $product['color_data'][] = [
+                                'name' => $id,
+                                'code' => '#cccccc'
+                            ];
+                        }
                     }
 
                     $product['color'] = implode(', ', array_unique($names));
                 }
             }
             $product['color'] = $product['color'] ?? '-';
+
 
             //دریافت توضیحات
             if ($base_data['show_description']) {
@@ -173,19 +186,19 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 'product' => $product,
                 'attributes' => $attributes,
                 'color' => $product['color'],
+                'color_data' => $product['color_data'],
                 'description' => $product['description'] ?? '',
                 'images' => $limited_images
             ]);
 
 
-            // تولید HTML
-            $html = $this->load->view('extension/module/digital_catalog/generate_product_list_by_category', $view_data);
-
-            // نوشتن HTML در PDF
-            $pdf->writeHTML($html);
+            $products_data[] = $view_data;
         }
+        $final_data = array_merge($base_data, [
+            'products' => $products_data
+        ]);
 
-        $pdf->Output($category_info['name'] . '.pdf', 'I');
+        $this->response->setOutput($this->load->view('extension/module/digital_catalog/generate_product_list_by_category', $final_data));
     }
 
     private function getProductsFromCategory($category_id)
