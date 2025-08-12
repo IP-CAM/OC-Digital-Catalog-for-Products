@@ -18,6 +18,7 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $product_info = $this->model_catalog_product->getProduct($product_id);
         $model = $product_info ? $product_info['model'] : '';
 
+
         $category_info = $this->model_catalog_category->getCategory($category_id);
         $products = $this->getProductsFromCategory($category_id);
 
@@ -33,8 +34,15 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             'show_model' => !empty($settings['digital_catalog_show_model']),
             'show_attributes' => !empty($settings['digital_catalog_show_attributes']),
             'show_color' => !empty($settings['digital_catalog_show_color']),
-            'show_description' => !empty($settings['digital_catalog_show_description'])
+            'show_description' => !empty($settings['digital_catalog_show_description']),
+            'show_collection' => !empty($settings['digital_catalog_show_collection']),
+            'show_sku' => !empty($settings['digital_catalog_show_sku']),
+            'show_qrcode' => !empty($settings['digital_catalog_show_qrcode']),
+            'show_address' => !empty($settings['digital_catalog_show_address']),
+            'show_email' => !empty($settings['digital_catalog_show_email']),
+            'show_phone' => !empty($settings['digital_catalog_show_phone'])
         ];
+
         $products_data = [];
         foreach ($products as $product) {
 
@@ -180,6 +188,15 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 }
             }
 
+            //دریافت کد انبار
+            if ($base_data['show_sku']) {
+                $product_info = $this->model_catalog_product->getProduct($product['product_id']);
+                if ($product_info) {
+                    $product['sku'] = $product_info['sku'];
+                } else {
+                    $product['sku'] = '';
+                }
+            }
 
             // داده‌های این محصول
             $view_data = array_merge($base_data, [
@@ -188,9 +205,11 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 'color' => $product['color'],
                 'color_data' => $product['color_data'],
                 'description' => $product['description'] ?? '',
+                'sku' => $product['sku'],
                 'images' => $limited_images
             ]);
 
+            
 
             $products_data[] = $view_data;
         }

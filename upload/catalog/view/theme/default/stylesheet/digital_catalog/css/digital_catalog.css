@@ -8,10 +8,23 @@
     font-family: main_font-regular;
 }
 body {
+    position: relative;
     width: 21cm;
-    height: 29.7cm;
+    height: auto;
     padding: 0;
     margin: 0 auto;
+}
+footer {
+    /* position: absolute; */
+    bottom: 0;
+    left: calc(50% - 5.25cm);
+    width: 50%;
+    margin: 0 auto;
+    background: #c9a35c;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 header {
     display: flex;
@@ -249,3 +262,27 @@ span.label {
 span.item {
     font-weight: bold;
 }
+
+
+@page {
+    size: A4;
+    margin: 0;
+}
+.product-page {
+    width: 210mm;
+    height: 296mm;
+  position: relative;
+}
+
+.product-page footer {
+  position: absolute;
+  bottom: -1px; 
+  left: 0px; 
+  right: 0px; 
+  height: 80px;
+  background: #c9a35c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

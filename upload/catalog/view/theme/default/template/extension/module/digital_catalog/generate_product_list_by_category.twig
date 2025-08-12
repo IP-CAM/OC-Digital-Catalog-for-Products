@@ -9,101 +9,161 @@
 	</head>
 
 	<body dir="rtl">
-		<h1 style="color:red;">{{ category_name }}</h1>
-		<button id="btn_download_pdf">دانلود PDF</button>
+		<button id="btn_download_pdf" style="margin:5px 15px;">دانلود PDF</button>
 
-		<div id="pdf_content" style="margin-right:15px;">
+		<div id="pdf_content" >
 
 			{% for product_data in products %}
-				<header>
-					<div class="store_logo">
-						<img src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/image/logo-bazar-rug-01.jpg" width="70px"/>
-					</div>
-					<div class="store_name">
-						فروشگاه اینترنتی فرش ماشینی بازار راگ
-					</div>
-				</header>
-				<main class="main" style="page-break-after: always; direction: rtl;">
+				<div class="product-page" style="page-break-after: {{ loop.last ? 'auto' : 'always' }}; padding-right:15px;">
+					<header>
+						<div class="store_logo">
+							<img src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/image/logo-bazar-rug-01.jpg" width="70px"/>
+						</div>
+						<div class="store_name">
+							فروشگاه اینترنتی فرش ماشینی بازار راگ
+						</div>
+					</header>
+					<main class="main" style=" direction: rtl;">
 
-					<div class="product_description">
+						<div class="product_description">
 
-						{% if show_model %}
-							<div class="description_section">
-								<div class="title model-title">طرح</div>
-								<div class="model_d">{{ product_data.product.model }}</div>
-							</div>
-						{% endif %}
+							{% if show_model %}
+								<div class="description_section">
+									<div class="title model-title">طرح</div>
+									<div class="model_d">{{ product_data.product.model }}</div>
+								</div>
+							{% endif %}
 
-						{% if show_color and product_data.color_data is defined and product_data.color_data %}
-							<div class="description_section">
-								<div class="title">رنگ‌ها</div>
-								<ul class="product_color">
-									{% for color in product_data.color_data %}
-										<li>
-											<div class="color_box" style="background-color: {{ color.code }};"></div>
-											<div class="color_title">{{ color.name }}</div>
-										</li>
+							{% if show_color and product_data.color_data is defined and product_data.color_data %}
+								<div class="description_section color_wrapper">
+									<div class="title">رنگ‌ها</div>
+									<ul class="product_color">
+										{% for color in product_data.color_data %}
+											<li>
+												<div class="color_box" style="background-color: {{ color.code }};"></div>
+												<div class="color_title">{{ color.name }}</div>
+											</li>
+										{% endfor %}
+									</ul>
+								</div>
+							{% endif %}
+
+							{% if show_attributes %}
+								<div class="description_section">
+									<div class="attribute_title">مشخصات کالا</div>
+									<ul class="attribute_list">
+										{% for attr in product_data.attributes %}
+											<li>{{ attr.text }}</li>
+										{% endfor %}
+									</ul>
+								</div>
+							{% endif %}
+						</div>
+
+						{% if show_image %}
+							<div class="product_image">
+								<div class="col_1">
+									{% if product_data.product.main_image %}
+										<div class="first_image">
+											<img src="{{ product_data.product.main_image }}" alt="Main Image"/>
+										</div>
+									{% endif %}
+
+									{# نمایش ۱ تصویر جانبی اضافه در col_1 اگر بیشتر از ۴ تصویر جانبی داشتیم #}
+									{% if product_data.images|length > 4 %}
+										<div>
+											<img src="{{ product_data.images[4].image }}" alt="Additional Image"/>
+										</div>
+									{% endif %}
+
+									{% if show_collection %}
+										<section class="category">
+											<span class="category_title">Collection</span>
+											<span class="category_name">{{ category_name }}</span>
+										</section>
+									{% endif %}
+								</div>
+
+								<div
+									class="col_2">
+									{# ۴ تصویر جانبی اول #}
+									{% for img in product_data.images|slice(0, 4) %}
+										<div>
+											<img src="{{ img.image }}" alt="Additional Image"/>
+										</div>
 									{% endfor %}
-								</ul>
+								</div>
 							</div>
 						{% endif %}
 
-
-						{% if show_description %}
-							<div class="description_section description">
-								{{ product_data.description|raw }}
-							</div>
-						{% endif %}
-
-
-						{% if show_attributes %}
-							<ul class="description_section attribute_list">
-								{% for attr in product_data.attributes %}
-									<li>{{ attr.text }}</li>
-								{% endfor %}
-							</ul>
-						{% endif %}
-
-
-						<div class="description_section">
-							<div style="font-weight: bold; font-size: 14px; border: 1px solid #000; padding: 15px; display: inline-block;">
-								کیوارکد
+						<div class="last-section">
+							{% if show_description %}
+								<div class="description_section description">
+									{{ product_data.description|raw }}
+								</div>
+							{% endif %}
+							<div class="description_section detail">
+								<div class="section_1">
+									{% if show_qrcode %}
+										<img src="./image/qr.jpg" class="qr">
+									{% endif %}
+									<ul class="contact">
+										{% if show_address %}
+											<li>
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 16 16">
+													<path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/><path d="m8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+												</svg>
+												<span>آران و بیدگل، شهرک سلیمان صباحی، بلوار بسیج، بلوار کارگر اصلی</span>
+											</li>
+										{% endif %}
+										{% if show_email %}
+											<li>
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 16 16">
+													<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+												</svg>
+												<span>info@bazarrug.com</span>
+											</li>
+										{% endif %}
+										{% if show_phone %}
+											<li>
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 16 16">
+													<path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
+												</svg>
+												<span>03154702653</span>
+											</li>
+										{% endif %}
+									</ul>
+								</div>
+								<div class="section_2">
+									{% if show_price %}
+										<div class="price_box">
+											<span class="label price_label">قیمت:
+											</span>
+											<span class="item price">{{ product_data.product.price }}</span>
+										</div>
+									{% endif %}
+									{% if show_sku %}
+										<div>
+											<span class="label">کد انبار:
+											</span>
+											<span class="item">{{ product_data.sku }}</span>
+										</div>
+									{% endif %}
+									{% if show_id %}
+										<div>
+											<span class="label">آدرس صفحه کالا:
+											</span>
+											<span class="item">https://bazarrug.com/fa/product/p-{{ product_data.product.product_id }}</span>
+										</div>
+									{% endif %}
+								</div>
 							</div>
 						</div>
-					</div>
-
-					{% if show_image %}
-						<div class="product_image">
-							<div class="col_1">
-								{% if product_data.product.main_image %}
-									<div class="first_image">
-										<img src="{{ product_data.product.main_image }}" alt="Main Image"/>
-									</div>
-								{% endif %}
-
-								{# نمایش ۱ تصویر جانبی اضافه در col_1 اگر بیشتر از ۴ تصویر جانبی داشتیم #}
-								{% if product_data.images|length > 4 %}
-									<div>
-										<img src="{{ product_data.images[4].image }}" alt="Additional Image"/>
-									</div>
-								{% endif %}
-								<span class="category_name">{{ category_name }}</span>
-							</div>
-
-							<div
-								class="col_2">
-								{# ۴ تصویر جانبی اول #}
-								{% for img in product_data.images|slice(0, 4) %}
-									<div>
-										<img src="{{ img.image }}" alt="Additional Image"/>
-									</div>
-								{% endfor %}
-							</div>
-						</div>
-					{% endif %}
-
-
-				</main>
+					</main>
+					<footer>
+						zojvgik
+					</footer>
+				</div>
 			{% else %}
 				<p style="text-align:center; color:red;">هیچ محصولی یافت نشد</p>
 			{% endfor %}
@@ -113,29 +173,28 @@
 		<script src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/js/html2pdf.bundle.min.js"></script>
 		<script>
 			document.getElementById("btn_download_pdf").addEventListener("click", function () {
-			const element = document.getElementById("pdf_content");
+const element = document.getElementById("pdf_content");
 
-			const opt = {
-			margin: 0,
-			filename: 'my-design.pdf',
-				image: {
-			type: 'jpeg',
-			quality: 0.98
-			},
-			html2canvas: {
-			scale: 2,
-			useCORS: true
-			},
-			jsPDF: {
-			unit: 'mm',
-			format: 'a4',
-			orientation: 'portrait'
-			}
-		};
+const opt = {
+margin: 0,
+filename: 'Digital_catalog.pdf',
+image: {
+type: 'jpeg',
+quality: 0.98
+},
+html2canvas: {
+scale: 2,
+useCORS: true
+},
+jsPDF: {
+unit: 'mm',
+format: 'a4',
+orientation: 'portrait'
+}
+};
 
-		html2pdf().set(opt).from(element).save();
-		});
+html2pdf().set(opt).from(element).save();
+});
 		</script>
-
 	</body>
 </html>

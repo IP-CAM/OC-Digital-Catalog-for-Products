@@ -23,6 +23,14 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             $post_data['digital_catalog_show_attributes'] = isset($post_data['digital_catalog_show_attributes']) ? 1 : 0;
             $post_data['digital_catalog_show_color'] = isset($post_data['digital_catalog_show_color']) ? 1 : 0;
             $post_data['digital_catalog_show_description'] = isset($post_data['digital_catalog_show_description']) ? 1 : 0;
+
+            $post_data['digital_catalog_show_collection'] = isset($post_data['digital_catalog_show_collection']) ? 1 : 0;
+            $post_data['digital_catalog_show_sku'] = isset($post_data['digital_catalog_show_sku']) ? 1 : 0;
+            $post_data['digital_catalog_show_qrcode'] = isset($post_data['digital_catalog_show_qrcode']) ? 1 : 0;
+            $post_data['digital_catalog_show_address'] = isset($post_data['digital_catalog_show_address']) ? 1 : 0;
+            $post_data['digital_catalog_show_email'] = isset($post_data['digital_catalog_show_email']) ? 1 : 0;
+            $post_data['digital_catalog_show_phone'] = isset($post_data['digital_catalog_show_phone']) ? 1 : 0;
+
             $post_data['digital_catalog_image_limit'] = isset($post_data['digital_catalog_image_limit']) ? (int)$post_data['digital_catalog_image_limit'] : 3;
 
             $this->model_setting_setting->editSetting('digital_catalog', ['digital_catalog' => $post_data]);
@@ -109,6 +117,13 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $data['digital_catalog_show_attributes'] = isset($module_info['digital_catalog_show_attributes']) ? $module_info['digital_catalog_show_attributes'] : 0;
         $data['digital_catalog_show_color'] = isset($module_info['digital_catalog_show_color']) ? $module_info['digital_catalog_show_color'] : 0;
         $data['digital_catalog_show_description'] = isset($module_info['digital_catalog_show_description']) ? $module_info['digital_catalog_show_description'] : 0;
+
+        $data['digital_catalog_show_collection'] = isset($module_info['digital_catalog_show_collection']) ? $module_info['digital_catalog_show_collection'] : 0;
+        $data['digital_catalog_show_sku'] = isset($module_info['digital_catalog_show_sku']) ? $module_info['digital_catalog_show_sku'] : 0;
+        $data['digital_catalog_show_qrcode'] = isset($module_info['digital_catalog_show_qrcode']) ? $module_info['digital_catalog_show_qrcode'] : 0;
+        $data['digital_catalog_show_address'] = isset($module_info['digital_catalog_show_address']) ? $module_info['digital_catalog_show_address'] : 0;
+        $data['digital_catalog_show_email'] = isset($module_info['digital_catalog_show_email']) ? $module_info['digital_catalog_show_email'] : 0;
+        $data['digital_catalog_show_phone'] = isset($module_info['digital_catalog_show_phone']) ? $module_info['digital_catalog_show_phone'] : 0;
 
         $data['digital_catalog_image_limit'] = isset($module_info['digital_catalog_image_limit']) ? (int)$module_info['digital_catalog_image_limit'] : 3;
 
