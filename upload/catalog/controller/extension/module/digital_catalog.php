@@ -1,4 +1,7 @@
 <?php
+
+
+require_once(modification(DIR_SYSTEM . 'library/phpqrcode/qrlib.php'));
 class ControllerExtensionModuleDigitalCatalog extends Controller
 {
 
@@ -45,7 +48,28 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
 
         $products_data = [];
         foreach ($products as $product) {
+            // ساخت لینک محصول
+            $product_url = $this->url->link('product/product', 'product_id=' . $product['product_id']);
 
+            
+            $qr_dir = DIR_IMAGE . 'qrcodes/';
+            if (!is_dir($qr_dir)) {
+                mkdir($qr_dir, 0755, true);
+            }
+
+            $qr_filename = 'product_' . $product['product_id'] . '.png';
+            $qr_path = $qr_dir . $qr_filename;
+
+            if (!file_exists($qr_path)) {
+                QRcode::png($product_url, $qr_path, QR_ECLEVEL_L, 4);
+            }
+
+            // مسیر نمایش در مرورگر
+            $product['qrcode'] = HTTP_SERVER . 'image/qrcodes/' . $qr_filename;
+
+
+
+            //دریافت تصاویر
             if ($product['image']) {
                 $product['main_image'] = HTTP_SERVER . 'image/' . $product['image'];
             } else {
@@ -206,10 +230,11 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 'color_data' => $product['color_data'],
                 'description' => $product['description'] ?? '',
                 'sku' => $product['sku'],
-                'images' => $limited_images
+                'images' => $limited_images,
+                'qrcode' => $product['qrcode']
             ]);
 
-            
+
 
             $products_data[] = $view_data;
         }

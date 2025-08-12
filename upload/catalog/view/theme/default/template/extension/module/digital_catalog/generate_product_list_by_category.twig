@@ -11,7 +11,7 @@
 	<body dir="rtl">
 		<button id="btn_download_pdf" style="margin:5px 15px;">دانلود PDF</button>
 
-		<div id="pdf_content" >
+		<div id="pdf_content">
 
 			{% for product_data in products %}
 				<div class="product-page" style="page-break-after: {{ loop.last ? 'auto' : 'always' }}; padding-right:15px;">
@@ -105,8 +105,9 @@
 							<div class="description_section detail">
 								<div class="section_1">
 									{% if show_qrcode %}
-										<img src="./image/qr.jpg" class="qr">
+										<img src="{{ product_data.qrcode }}" alt="QR Code محصول {{ product_data.product.name }}" class="qr">
 									{% endif %}
+
 									<ul class="contact">
 										{% if show_address %}
 											<li>
