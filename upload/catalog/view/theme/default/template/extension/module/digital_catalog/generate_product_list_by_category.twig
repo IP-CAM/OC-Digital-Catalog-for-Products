@@ -9,8 +9,6 @@
 	</head>
 
 	<body dir="rtl">
-		<button id="btn_download_pdf" style="margin:5px 15px;">دانلود PDF</button>
-
 		<div id="pdf_content">
 
 			{% for product_data in products %}
@@ -21,6 +19,10 @@
 						</div>
 						<div class="store_name">
 							فروشگاه اینترنتی فرش ماشینی بازار راگ
+						</div>
+						<div class="catalog_date">
+							<div class="date_title">Products catalogue</div>
+							<div class="date_date">{{ product_data.current_date }}</div>
 						</div>
 					</header>
 					<main class="main" style=" direction: rtl;">
@@ -50,7 +52,7 @@
 
 							{% if show_attributes %}
 								<div class="description_section">
-									<div class="attribute_title">مشخصات کالا</div>
+									<div class="attribute_title">مشخصات محصول</div>
 									<ul class="attribute_list">
 										{% for attr in product_data.attributes %}
 											<li>{{ attr.text }}</li>
@@ -173,29 +175,29 @@
 
 		<script src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/js/html2pdf.bundle.min.js"></script>
 		<script>
-			document.getElementById("btn_download_pdf").addEventListener("click", function () {
-const element = document.getElementById("pdf_content");
+			window.onload = function () {
+    const element = document.getElementById("pdf_content");
 
-const opt = {
-margin: 0,
-filename: 'Digital_catalog.pdf',
-image: {
-type: 'jpeg',
-quality: 0.98
-},
-html2canvas: {
-scale: 2,
-useCORS: true
-},
-jsPDF: {
-unit: 'mm',
-format: 'a4',
-orientation: 'portrait'
-}
+    const opt = {
+        margin: 0,
+        filename: 'Digital_catalog.pdf',
+        image: {
+            type: 'jpeg',
+            quality: 0.98
+        },
+        html2canvas: {
+            scale: 2,
+            useCORS: true
+        },
+        jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait'
+        }
+    };
+
+    html2pdf().set(opt).from(element).save();
 };
-
-html2pdf().set(opt).from(element).save();
-});
 		</script>
 	</body>
 </html>

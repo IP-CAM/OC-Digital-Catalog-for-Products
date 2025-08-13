@@ -1,6 +1,6 @@
 <?php
 
-
+require_once(DIR_SYSTEM . 'library/jdf.php');
 require_once(modification(DIR_SYSTEM . 'library/phpqrcode/qrlib.php'));
 class ControllerExtensionModuleDigitalCatalog extends Controller
 {
@@ -15,8 +15,8 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
 
         $settings = $this->config->get('digital_catalog');
 
-        $product_id = isset($this->request->get['product_id']) ? (int)$this->request->get['product_id'] : 0;
-        $category_id = isset($this->request->get['category_id']) ? (int)$this->request->get['category_id'] : 0;
+        $product_id = isset($this->request->get['product_id']) ? (int) $this->request->get['product_id'] : 0;
+        $category_id = isset($this->request->get['category_id']) ? (int) $this->request->get['category_id'] : 0;
 
         $product_info = $this->model_catalog_product->getProduct($product_id);
         $model = $product_info ? $product_info['model'] : '';
@@ -46,12 +46,18 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             'show_phone' => !empty($settings['digital_catalog_show_phone'])
         ];
 
+        //دریافت تاریخ
+        $current_date = ($this->language->get('code') == 'fa')
+            ? jdate('Y/m/d')
+            : date('Y/m/d');
+
+
         $products_data = [];
         foreach ($products as $product) {
             // ساخت لینک محصول
             $product_url = $this->url->link('product/product', 'product_id=' . $product['product_id']);
 
-            
+
             $qr_dir = DIR_IMAGE . 'qrcodes/';
             if (!is_dir($qr_dir)) {
                 mkdir($qr_dir, 0755, true);
@@ -76,7 +82,7 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 $product['main_image'] = '';
             }
 
-            $image_limit = isset($settings['digital_catalog_image_limit']) ? (int)$settings['digital_catalog_image_limit'] : 3;
+            $image_limit = isset($settings['digital_catalog_image_limit']) ? (int) $settings['digital_catalog_image_limit'] : 3;
 
             $product_images = $this->model_catalog_product->getProductImages($product['product_id']);
 
@@ -89,7 +95,8 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 } else {
                     while (count($limited_images) < $image_limit) {
                         foreach ($product_images as $img) {
-                            if (count($limited_images) >= $image_limit) break;
+                            if (count($limited_images) >= $image_limit)
+                                break;
                             $limited_images[] = $img;
                         }
                     }
@@ -111,8 +118,8 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                     FROM " . DB_PREFIX . "product_attribute pa
                     JOIN " . DB_PREFIX . "attribute_description ad 
                     ON ad.attribute_id = pa.attribute_id 
-                    AND ad.language_id = '" . (int)$this->config->get('config_language_id') . "'
-                    WHERE pa.product_id = '" . (int)$product['product_id'] . "'
+                    AND ad.language_id = '" . (int) $this->config->get('config_language_id') . "'
+                    WHERE pa.product_id = '" . (int) $product['product_id'] . "'
                     AND pa.is_brief = 1
                     AND TRIM(pa.text) != ''
                 ");
@@ -129,7 +136,7 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             if ($base_data['show_color']) {
                 $rows = $this->db->query("
         SELECT color FROM " . DB_PREFIX . "product_image
-        WHERE product_id = " . (int)$product['product_id'] . "
+        WHERE product_id = " . (int) $product['product_id'] . "
         AND color IS NOT NULL AND color != '' AND color != '0'
         ORDER BY sort_order ASC
     ")->rows;
@@ -151,7 +158,7 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
 
                     if ($num_ids = array_filter($ids, 'is_numeric')) {
                         $map = [];
-                        $lang = (int)$this->config->get('config_language_id');
+                        $lang = (int) $this->config->get('config_language_id');
                         $in = implode(',', array_map('intval', $num_ids));
 
                         // گرفتن نام رنگ‌ها
@@ -231,7 +238,8 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 'description' => $product['description'] ?? '',
                 'sku' => $product['sku'],
                 'images' => $limited_images,
-                'qrcode' => $product['qrcode']
+                'qrcode' => $product['qrcode'],
+                'current_date' => $current_date
             ]);
 
 
