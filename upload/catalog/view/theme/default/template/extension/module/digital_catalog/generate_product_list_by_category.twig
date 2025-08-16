@@ -90,7 +90,7 @@
 									{% if show_collection %}
 										<section class="category">
 											<span class="category_title">Collection</span>
-											<span class="category_name">{{ category_name }}</span>
+											<span class="category_name">{{  product_data.category_name }}</span>
 										</section>
 									{% endif %}
 								</div>
@@ -184,6 +184,7 @@
 
 		<script src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/js/html2pdf.bundle.min.js"></script>
 		 <script>
+    window.scrollTo(0, 0);
     document.body.style.overflow = 'hidden';
     const overlay = document.getElementById('pdf-loading-overlay');
     overlay.style.display = 'block';
@@ -226,6 +227,7 @@
         html2pdf().set(opt).from(batchDiv).save(`Digital_catalog_${Math.floor(startIndex / batch) + 1}.pdf`)
           .then(() => {
             setTimeout(() => {
+				window.scrollTo(0, 0);
               generateBatchPDF(startIndex + batch);
             }, delay);
           });

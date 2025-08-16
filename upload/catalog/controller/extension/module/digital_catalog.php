@@ -23,8 +23,8 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $category_info = $this->model_catalog_category->getCategory($category_id);
         $products = $this->getProductsFromCategory($category_id);
 
+
         $base_data = [
-            'category_name' => $category_info['name'],
             'base' => HTTP_SERVER,
             'title' => 'لیست محصولات ' . $category_info['name'],
             // تنظیمات نمایش
@@ -214,6 +214,16 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 }
             }
 
+            //کتگوری
+            $product_categories = $this->model_catalog_product->getCategories($product['product_id']);
+            $last_category_name = '';
+            if ($product_categories) {
+                $last_category_id = end($product_categories)['category_id'];
+                $category_info = $this->model_catalog_category->getCategory($last_category_id);
+                $last_category_name = $category_info['name'];
+            }
+
+            
             // داده‌های  محصول
             $view_data = array_merge($base_data, [
                 'product' => $product,
@@ -224,9 +234,11 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 'sku' => $product['sku'],
                 'images' => $limited_images,
                 'qrcode' => $product['qrcode'],
-                'current_date' => $current_date
+                'current_date' => $current_date,
+                'category_name' => $last_category_name,
             ]);
 
+            
 
 
             $products_data[] = $view_data;
