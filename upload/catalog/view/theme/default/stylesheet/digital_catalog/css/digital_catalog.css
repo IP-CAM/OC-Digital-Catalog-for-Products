@@ -102,7 +102,7 @@ ul.product_color {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 7px;
     padding: 0;
     margin: 0;
     list-style: none;

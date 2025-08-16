@@ -54,12 +54,15 @@
 								<div class="description_section">
 									<div class="attribute_title">مشخصات محصول</div>
 									<ul class="attribute_list">
-										{% for attr in product_data.attributes %}
-											<li>{{ attr.text }}</li>
+										{% for group in product_data.attributes %}
+											{% for attr in group.attribute %}
+												<li>{{ attr.text }}</li>
+											{% endfor %}
 										{% endfor %}
 									</ul>
 								</div>
 							{% endif %}
+
 						</div>
 
 						{% if show_image %}
@@ -174,30 +177,57 @@
 		</div>
 
 		<script src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/js/html2pdf.bundle.min.js"></script>
-		<script>
-			window.onload = function () {
-    const element = document.getElementById("pdf_content");
+<script>
+window.onload = function () {
 
     const opt = {
         margin: 0,
-        filename: 'Digital_catalog.pdf',
-        image: {
-            type: 'jpeg',
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2,
-            useCORS: true
-        },
-        jsPDF: {
-            unit: 'mm',
-            format: 'a4',
-            orientation: 'portrait'
-        }
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    const products = document.querySelectorAll('.product-page');
+    const batch = 20; // تعداد محصول در هر PDF
+    const delay = 300; // تاخیر بین هر batch
+
+    function preloadImages(container) {
+        const images = container.querySelectorAll('img');
+        const promises = [];
+        images.forEach(img => {
+            if (!img.complete) {
+                promises.push(new Promise(res => {
+                    img.onload = img.onerror = res;
+                }));
+            }
+        });
+        return Promise.all(promises);
+    }
+
+    function generateBatchPDF(startIndex) {
+        if (startIndex >= products.length) return; 
+
+        const batchDiv = document.createElement('div');
+        for (let i = startIndex; i < startIndex + batch && i < products.length; i++) {
+            batchDiv.appendChild(products[i].cloneNode(true));
+        }
+
+        preloadImages(batchDiv).then(() => {
+            html2pdf()
+                .set(opt)
+                .from(batchDiv)
+                .save(`Digital_catalog_${Math.floor(startIndex / batch) + 1}.pdf`)
+                .then(() => {
+
+                    setTimeout(() => {
+                        generateBatchPDF(startIndex + batch);
+                    }, delay);
+                });
+        });
+    }
+
+    generateBatchPDF(0);
 };
-		</script>
+</script>
 	</body>
 </html>

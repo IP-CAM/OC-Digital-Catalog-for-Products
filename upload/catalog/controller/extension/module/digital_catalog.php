@@ -1,5 +1,4 @@
 <?php
-
 require_once(DIR_SYSTEM . 'library/jdf.php');
 require_once(modification(DIR_SYSTEM . 'library/phpqrcode/qrlib.php'));
 class ControllerExtensionModuleDigitalCatalog extends Controller
@@ -12,6 +11,8 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $this->load->language('extension/module/digital_catalog');
         $this->load->model('catalog/product');
         $this->load->model('catalog/category');
+        $this->load->model('tool/image');
+
 
         $settings = $this->config->get('digital_catalog');
 
@@ -19,9 +20,6 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $category_id = isset($this->request->get['category_id']) ? (int) $this->request->get['category_id'] : 0;
 
         $product_info = $this->model_catalog_product->getProduct($product_id);
-        $model = $product_info ? $product_info['model'] : '';
-
-
         $category_info = $this->model_catalog_category->getCategory($category_id);
         $products = $this->getProductsFromCategory($category_id);
 
@@ -52,9 +50,10 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             : date('Y/m/d');
 
 
+
         $products_data = [];
         foreach ($products as $product) {
-            // ساخت لینک محصول
+            // ساخت QR code 
             $product_url = $this->url->link('product/product', 'product_id=' . $product['product_id']);
 
 
@@ -69,66 +68,46 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             if (!file_exists($qr_path)) {
                 QRcode::png($product_url, $qr_path, QR_ECLEVEL_L, 4);
             }
+            $product['qrcode'] = $this->model_tool_image->resize(
+                'qrcodes/' . $qr_filename,
+                $this->config->get('theme_' . $this->config->get('config_theme') . '_image_additional_width'),
+                $this->config->get('theme_' . $this->config->get('config_theme') . '_image_additional_height')
+            );
 
-            // مسیر نمایش در مرورگر
-            $product['qrcode'] = HTTP_SERVER . 'image/qrcodes/' . $qr_filename;
 
 
-
-            //دریافت تصاویر
+            // دریافت تصاویر اصلی
             if ($product['image']) {
-                $product['main_image'] = HTTP_SERVER . 'image/' . $product['image'];
+                $product['main_image'] = $this->model_tool_image->resize(
+                    $product['image'],
+                    $this->config->get('theme_' . $this->config->get('config_theme') . '_image_popup_width'),
+                    $this->config->get('theme_' . $this->config->get('config_theme') . '_image_popup_height')
+                );
             } else {
-                $product['main_image'] = '';
+                $product['main_image'] = $this->model_tool_image->resize('placeholder.png', 500, 500);
             }
 
             $image_limit = isset($settings['digital_catalog_image_limit']) ? (int) $settings['digital_catalog_image_limit'] : 3;
-
             $product_images = $this->model_catalog_product->getProductImages($product['product_id']);
 
-            $limited_images = [];
-
-            if ($product_images) {
-                $count_images = count($product_images);
-                if ($count_images >= $image_limit) {
-                    $limited_images = array_slice($product_images, 0, $image_limit);
-                } else {
-                    while (count($limited_images) < $image_limit) {
-                        foreach ($product_images as $img) {
-                            if (count($limited_images) >= $image_limit)
-                                break;
-                            $limited_images[] = $img;
-                        }
-                    }
-                }
-            } else {
-                $limited_images = [];
-            }
-
+            $limited_images = array_slice($product_images, 0, $image_limit);
             foreach ($limited_images as &$img) {
-                $img['image'] = HTTP_SERVER . 'image/' . $img['image'];
+                $img['image'] = $this->model_tool_image->resize(
+                    $img['image'],
+                    $this->config->get('theme_' . $this->config->get('config_theme') . '_image_additional_width'),
+                    $this->config->get('theme_' . $this->config->get('config_theme') . '_image_additional_height')
+                );
             }
 
 
             // دریافت خصوصیات فعال محصول 
             $attributes = [];
             if ($base_data['show_attributes']) {
-                $query = $this->db->query("
-                    SELECT ad.name, pa.text
-                    FROM " . DB_PREFIX . "product_attribute pa
-                    JOIN " . DB_PREFIX . "attribute_description ad 
-                    ON ad.attribute_id = pa.attribute_id 
-                    AND ad.language_id = '" . (int) $this->config->get('config_language_id') . "'
-                    WHERE pa.product_id = '" . (int) $product['product_id'] . "'
-                    AND pa.is_brief = 1
-                    AND TRIM(pa.text) != ''
-                ");
-
-                foreach ($query->rows as $result) {
-                    $attributes[] = [
-                        'name' => $result['name'],
-                        'text' => html_entity_decode($result['text'], ENT_QUOTES, 'UTF-8')
-                    ];
+                $attributes = $this->model_catalog_product->getProductAttributes($product['product_id']);
+                if ($attributes) {
+                    foreach ($attributes as &$group) {
+                        $group['attribute'] = array_slice($group['attribute'], 0, 6);
+                    }
                 }
             }
 
@@ -209,27 +188,33 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             $product['color'] = $product['color'] ?? '-';
 
 
-            //دریافت توضیحات
+            $product_info = $this->model_catalog_product->getProduct($product['product_id']);
+            // دریافت توضیحات
             if ($base_data['show_description']) {
-                $product_info = $this->model_catalog_product->getProduct($product['product_id']);
-                if ($product_info) {
-                    $product['description'] = html_entity_decode($product_info['description']);
+                if ($product_info && !empty($product_info['description'])) {
+                    $full_description = html_entity_decode($product_info['description']);
+                    //لیمیت توضیحات 
+                    $max_length = 400;
+                    if (mb_strlen($full_description) > $max_length) {
+                        $product['description'] = mb_substr($full_description, 0, $max_length) . '...';
+                    } else {
+                        $product['description'] = $full_description;
+                    }
                 } else {
                     $product['description'] = '';
                 }
             }
 
-            //دریافت کد انبار
+            // دریافت کد انبار (SKU)
             if ($base_data['show_sku']) {
-                $product_info = $this->model_catalog_product->getProduct($product['product_id']);
-                if ($product_info) {
+                if ($product_info && !empty($product_info['sku'])) {
                     $product['sku'] = $product_info['sku'];
                 } else {
                     $product['sku'] = '';
                 }
             }
 
-            // داده‌های این محصول
+            // داده‌های  محصول
             $view_data = array_merge($base_data, [
                 'product' => $product,
                 'attributes' => $attributes,
