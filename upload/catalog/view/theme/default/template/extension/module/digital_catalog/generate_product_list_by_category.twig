@@ -13,7 +13,7 @@
 		<div id="pdf-loading-overlay">
 			<div class="loading-text">در حال ساخت PDF لطفا صبر کنید...</div>
 		</div>
-		
+
 
 		<div id="pdf_content">
 
@@ -110,7 +110,7 @@
 						<div class="last-section">
 							{% if show_description %}
 								<div class="description_section description">
-									{{ product_data.description|raw }}
+									<span>{{ product_data.description|raw }}</span>
 								</div>
 							{% endif %}
 							<div class="description_section detail">
@@ -149,21 +149,21 @@
 								<div class="section_2">
 									{% if show_price %}
 										<div class="price_box">
-											<span class="label price_label">قیمت:
+											<span class="label price_label">قیمت<span>:</span>
 											</span>
 											<span class="item price">{{ product_data.product.price }}</span>
 										</div>
 									{% endif %}
 									{% if show_sku %}
 										<div>
-											<span class="label">کد انبار:
+											<span class="label">کد انبار<span>:</span>
 											</span>
 											<span class="item">{{ product_data.sku }}</span>
 										</div>
 									{% endif %}
 									{% if show_id %}
 										<div>
-											<span class="label">آدرس صفحه کالا:
+											<span class="label">آدرس صفحه کالا<span>:</span>
 											</span>
 											<span class="item">https://bazarrug.com/fa/product/p-{{ product_data.product.product_id }}</span>
 										</div>
@@ -183,59 +183,78 @@
 		</div>
 
 		<script src="{{ base }}catalog/view/theme/default/stylesheet/digital_catalog/js/html2pdf.bundle.min.js"></script>
-		 <script>
-    window.scrollTo(0, 0);
-    document.body.style.overflow = 'hidden';
-    const overlay = document.getElementById('pdf-loading-overlay');
-    overlay.style.display = 'block';
+		<script>
+		document.addEventListener('DOMContentLoaded', function() {
 
-    const opt = {
-      margin: 0,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+    // --- تابع ویرایش علائم نگارشی ---
+    function formatPunctuation() {
+        var textElements = document.querySelectorAll('.description_section.description span'); 
+        
+        textElements.forEach(function(element) {
+            var text = element.innerHTML;
+            var newText = text.replace(/([,.;?،؛؟])/g, '<span>$1</span>');
+            element.innerHTML = newText;
+        });
+    }
 
-    const products = document.querySelectorAll('.product-page');
-    const batch = 20;
-    const delay = 300;
+    function generatePDF() {
+        window.scrollTo(0, 0);
+        document.body.style.overflow = 'hidden';
+        const overlay = document.getElementById('pdf-loading-overlay');
+        overlay.style.display = 'block';
 
-    function preloadImages(container) {
-      const images = container.querySelectorAll('img');
-      const promises = [];
-      images.forEach(img => {
-        if (!img.complete) {
-          promises.push(new Promise(res => { img.onload = img.onerror = res; }));
+        const opt = {
+            margin: 0,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        const products = document.querySelectorAll('.product-page');
+        const batch = 20;
+        const delay = 300;
+
+        function preloadImages(container) {
+            const images = container.querySelectorAll('img');
+            const promises = [];
+            images.forEach(img => {
+                if (!img.complete) {
+                    promises.push(new Promise(res => { img.onload = img.onerror = res; }));
+                }
+            });
+            return Promise.all(promises);
         }
-      });
-      return Promise.all(promises);
+
+        function generateBatchPDF(startIndex) {
+            if (startIndex >= products.length) {
+                overlay.style.display = 'none';
+                document.body.style.overflow = '';
+                return;
+            }
+
+            const batchDiv = document.createElement('div');
+            for (let i = startIndex; i < startIndex + batch && i < products.length; i++) {
+                batchDiv.appendChild(products[i].cloneNode(true));
+            }
+
+            preloadImages(batchDiv).then(() => {
+                html2pdf().set(opt).from(batchDiv).save(`Digital_catalog_${Math.floor(startIndex / batch) + 1}.pdf`)
+                    .then(() => {
+                        setTimeout(() => {
+                            window.scrollTo(0, 0);
+                            generateBatchPDF(startIndex + batch);
+                        }, delay);
+                    });
+            });
+        }
+
+        generateBatchPDF(0);
     }
 
-    function generateBatchPDF(startIndex) {
-      if (startIndex >= products.length) {
-        overlay.style.display = 'none';
-        document.body.style.overflow = '';
-        return;
-      }
-
-      const batchDiv = document.createElement('div');
-      for (let i = startIndex; i < startIndex + batch && i < products.length; i++) {
-        batchDiv.appendChild(products[i].cloneNode(true));
-      }
-
-      preloadImages(batchDiv).then(() => {
-        html2pdf().set(opt).from(batchDiv).save(`Digital_catalog_${Math.floor(startIndex / batch) + 1}.pdf`)
-          .then(() => {
-            setTimeout(() => {
-				window.scrollTo(0, 0);
-              generateBatchPDF(startIndex + batch);
-            }, delay);
-          });
-      });
-    }
-
-
-    generateBatchPDF(0);
-  </script>
+    
+    formatPunctuation(); 
+    generatePDF();       
+});
+		</script>
 	</body>
 </html>
