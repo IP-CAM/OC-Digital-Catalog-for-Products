@@ -1,11 +1,8 @@
 <?php
 require_once(DIR_SYSTEM . 'library/jdf.php');
 require_once(modification(DIR_SYSTEM . 'library/phpqrcode/qrlib.php'));
-class ControllerExtensionModuleDigitalCatalog extends Controller
-{
-
-    public function generate_product_list_by_category()
-    {
+class ControllerExtensionModuleDigitalCatalog extends Controller{
+    public function generate_product_list_by_category(){
         ob_clean();
 
         $this->load->language('extension/module/digital_catalog');
@@ -13,7 +10,7 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $this->load->model('catalog/category');
         $this->load->model('tool/image');
 
-
+        $language_id = (int)$this->config->get('config_language_id');
         $settings = $this->config->get('digital_catalog');
 
         $product_id = isset($this->request->get['product_id']) ? (int) $this->request->get['product_id'] : 0;
@@ -23,10 +20,14 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
         $category_info = $this->model_catalog_category->getCategory($category_id);
         $products = $this->getProductsFromCategory($category_id);
 
+        $store_name = $this->config->get('config_name');
+        $store_address = $this->config->get('config_address');
+        $store_email = $this->config->get('config_email');
+        $store_telephone = $this->config->get('config_telephone');
+
 
         $base_data = [
             'base' => HTTP_SERVER,
-            'title' => 'لیست محصولات ' . $category_info['name'],
             // تنظیمات نمایش
             'show_id' => !empty($settings['digital_catalog_show_id']),
             'show_name' => !empty($settings['digital_catalog_show_name']),
@@ -49,14 +50,16 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             ? jdate('Y/m/d')
             : date('Y/m/d');
 
-
+        
+        $lang_texts = $this->language->all();
 
         $products_data = [];
         foreach ($products as $product) {
+
+            $product_info = $this->model_catalog_product->getProduct($product['product_id']);
+
             // ساخت QR code 
             $product_url = $this->url->link('product/product', 'product_id=' . $product['product_id']);
-
-
             $qr_dir = DIR_IMAGE . 'qrcodes/';
             if (!is_dir($qr_dir)) {
                 mkdir($qr_dir, 0755, true);
@@ -73,7 +76,6 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
                 $this->config->get('theme_' . $this->config->get('config_theme') . '_image_additional_width'),
                 $this->config->get('theme_' . $this->config->get('config_theme') . '_image_additional_height')
             );
-
 
 
             // دریافت تصاویر اصلی
@@ -187,8 +189,6 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             }
             $product['color'] = $product['color'] ?? '-';
 
-
-            $product_info = $this->model_catalog_product->getProduct($product['product_id']);
             // دریافت توضیحات
             if ($base_data['show_description']) {
                 if ($product_info && !empty($product_info['description'])) {
@@ -244,7 +244,13 @@ class ControllerExtensionModuleDigitalCatalog extends Controller
             $products_data[] = $view_data;
         }
         $final_data = array_merge($base_data, [
-            'products' => $products_data
+            'products' => $products_data,
+            'store_name' => $store_name,
+            'store_address' => $store_address,
+            'store_email' => $store_email,
+            'store_telephone' => $store_telephone,
+            'lang' => $lang_texts,
+            'direction' => ($this->language->get('code') == 'fa' || $this->language->get('code') == 'ar') ? 'rtl' : 'ltr'
         ]);
 
         $this->response->setOutput($this->load->view('extension/module/digital_catalog/generate_product_list_by_category', $final_data));
